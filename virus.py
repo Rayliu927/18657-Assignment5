@@ -1,17 +1,18 @@
+ 
 import pygame
 import random
  
 # Define some colors
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
-RED = (255,0,0)
+RED = (255, 0, 0)
  
 SCREEN_WIDTH = 700
-SCREEN_HEIGHT = 700
-BALL_SIZE = 10
+SCREEN_HEIGHT = 500
+BLOCK_SIZE = 25
  
  
-class Ball:
+class Block:
     """
     Class to keep track of a ball's location and vector.
     """
@@ -22,21 +23,21 @@ class Ball:
         self.change_y = 0
  
  
-def make_ball():
+def make_block():
     """
     Function to make a new, random ball.
     """
-    ball = Ball()
+    block = Block()
     # Starting position of the ball.
     # Take into account the ball size so we don't spawn on the edge.
-    ball.x = random.randrange(BALL_SIZE, SCREEN_WIDTH - BALL_SIZE)
-    ball.y = random.randrange(BALL_SIZE, SCREEN_HEIGHT - BALL_SIZE)
+    block.x = random.randrange(BLOCK_SIZE, SCREEN_WIDTH - BLOCK_SIZE)
+    block.y = random.randrange(BLOCK_SIZE, SCREEN_HEIGHT - BLOCK_SIZE)
  
     # Speed and direction of rectangle
-    ball.change_x = random.randrange(-2, 2)
-    ball.change_y = random.randrange(-2, 2)
+    block.change_x = random.randrange(-2, 3)
+    block.change_y = random.randrange(-2, 3)
  
-    return ball
+    return block
  
  
 def main():
@@ -57,10 +58,10 @@ def main():
     # Used to manage how fast the screen updates
     clock = pygame.time.Clock()
  
-    ball_list = []
+    block_list = []
  
-    ball = make_ball()
-    ball_list.append(ball)
+    block = make_block()
+    block_list.append(block)
  
     # -------- Main Program Loop -----------
     while not done:
@@ -71,28 +72,28 @@ def main():
             elif event.type == pygame.KEYDOWN:
                 # Space bar! Spawn a new ball.
                 if event.key == pygame.K_SPACE:
-                    ball = make_ball()
-                    ball_list.append(ball)
+                    block = make_block()
+                    block_list.append(block)
  
         # --- Logic
-        for ball in ball_list:
+        for block in block_list:
             # Move the ball's center
-            ball.x += ball.change_x
-            ball.y += ball.change_y
+            block.x += block.change_x
+            block.y += block.change_y
  
             # Bounce the ball if needed
-            if ball.y > SCREEN_HEIGHT - BALL_SIZE or ball.y < BALL_SIZE:
-                ball.change_y *= -1
-            if ball.x > SCREEN_WIDTH - BALL_SIZE or ball.x < BALL_SIZE:
-                ball.change_x *= -1
+            if block.y > SCREEN_HEIGHT - BLOCK_SIZE or block.y < BLOCK_SIZE:
+                block.change_y *= -1
+            if block.x > SCREEN_WIDTH - BLOCK_SIZE or block.x < BLOCK_SIZE:
+                block.change_x *= -1
  
         # --- Drawing
         # Set the screen background
         screen.fill(BLACK)
  
         # Draw the balls
-        for ball in ball_list:
-            pygame.draw.rect(screen, RED, (ball.x, ball.y, BALL_SIZE, BALL_SIZE)
+        for block in block_list:
+            pygame.draw.rect(screen, RED, (block.x, block.y, BLOCK_SIZE, BLOCK_SIZE))
  
         # --- Wrap-up
         # Limit to 60 frames per second
