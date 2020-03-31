@@ -13,17 +13,17 @@ SCREEN_WIDTH = 1000
 SCREEN_HEIGHT = 1000
 BLOCK_SIZE = 10
 # population size = 1000
-M = 2000
+M = 1000
 # inital infection rate = 0.1%
-X = 0.3
+X = 0.1
 # mobility = 50%
 Pm = 0.5
 # death probability = 2%
-Pd = 0.8
+Pd = 0.02
 # infection duration = 7 periods
-K = 100
+K = 60
 # S% of population stationary: 0 -> 1
-S = 0.9
+S = 0.5
 
 block_list = []
 # position:block
@@ -85,15 +85,20 @@ def make_block_mobile(block):
     block.direction = directions[(x, y)]
 
 def infect(block):
-    if block.status != "infected":
+    if block.status == "cured":
         return
-    for x in range(block.x-5, block.x + 5):
-        for y in range(block.y-5, block.y+5):
+    for x in range(block.x - 10, block.x + 10):
+        for y in range(block.y - 10, block.y + 10):
             if (x, y) in block_position:
                 hit_block = block_position[(x, y)]
-                if hit_block.status == "healthy":
+                if block.status == "infected" and hit_block.status == "infected":
+                    continue
+                elif block.status == "infected" and hit_block.status == "healthy":
                     hit_block.status = "infected"
                     hit_block.periods = 0
+                elif block.status == "healthy" and hit_block.status == "infected":
+                    block.status = "infected"
+                    block.periods = 0
 
 def eliminate_options(block):
     options = [(0, 1), (1, 0), (-1, 0), (0, -1), (1, 1), (1, -1), (-1, 1), (-1, -1)]
@@ -185,7 +190,7 @@ def main():
     This is our main program.
     """
     pygame.init()
- 
+    death = 0
     # Set the height and width of the screen
     size = [SCREEN_WIDTH, SCREEN_HEIGHT]
     screen = pygame.display.set_mode(size)
@@ -256,7 +261,7 @@ def main():
         # Set the screen background
         screen.fill(WHITE)
  
-        # Draw the balls
+        # Draw the blocks
         for block in block_list:
             if block.status == "infected":
                 block.periods += 1
@@ -265,6 +270,8 @@ def main():
                     poss = random.uniform(0, 1)
                     if poss < Pd:
                         die(block)
+                        death += 1
+                        print(death)
                         continue
                     else:
                         block.status = "cured"
