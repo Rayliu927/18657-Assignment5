@@ -19,7 +19,7 @@ X = 0.3
 # mobility = 50%
 Pm = 0.5
 # death probability = 2%
-Pd = 0.1
+Pd = 0.8
 # infection duration = 7 periods
 K = 100
 # S% of population stationary: 0 -> 1
@@ -55,8 +55,8 @@ def make_block(status):
     Function to make a new block.
     """
     block = Block()
-    # Starting position of the ball.
-    # Take into account the ball size so we don't spawn on the edge.
+    # Starting position of the block.
+    # Take into account the block size so we don't spawn on the edge.
     block.x = random.randrange(BLOCK_SIZE, SCREEN_WIDTH - BLOCK_SIZE)
     block.y = random.randrange(BLOCK_SIZE, SCREEN_HEIGHT - BLOCK_SIZE)
     block.status = status
@@ -84,24 +84,19 @@ def make_block_mobile(block):
     # block.change_y = 10
     block.direction = directions[(x, y)]
 
-def infect(block1, block2):
-
-    if block1.status == "infected" and block2.status == "infected":
+def infect(block):
+    if block.status != "infected":
         return
-    if block1.status == "infected":
-        block2.status = "infected"
-        block2.periods = 0
-    elif block2.status == "infected":
-        block1.status = "infected"
-        block1.periods = 0
+    for x in range(block.x-5, block.x + 5):
+        for y in range(block.y-5, block.y+5):
+            if (x, y) in block_position:
+                hit_block = block_position[(x, y)]
+                if hit_block.status == "healthy":
+                    hit_block.status = "infected"
+                    hit_block.periods = 0
 
-
-def mobile(block):
-    """
-    Function to make a block bounce if encounter a obstacle
-    """
+def eliminate_options(block):
     options = [(0, 1), (1, 0), (-1, 0), (0, -1), (1, 1), (1, -1), (-1, 1), (-1, -1)]
-    original_x, original_y = block.x, block.y
 
     # top left corner
     if block.x < 0 and block.y < 0:
@@ -136,13 +131,20 @@ def mobile(block):
     else:
         options.remove((1, 0))
 
+    return options
+
+
+def mobile(block):
+    """
+    Function to make a block bounce if encounter a obstacle
+    """
+    original_x, original_y = block.x, block.y
+    options = eliminate_options(block)
     block.x += block.change_x
     block.y += block.change_y
+    infect(block)
 
     if (block.x, block.y) in block_position or block.y > SCREEN_HEIGHT - BLOCK_SIZE or block.y < 0 or block.x > SCREEN_WIDTH - BLOCK_SIZE or block.x < 0:
-        if (block.x, block.y) in block_position:
-            hit_block = block_position[(block.x, block.y)]
-            infect(block, hit_block)
 
         while len(options) > 0:
             block.x = original_x
@@ -153,9 +155,7 @@ def mobile(block):
 
             block.x += new_direction[0]
             block.y += new_direction[1]
-            if (block.x, block.y) in block_position:
-                hit_block = block_position[(block.x, block.y)]
-                infect(block, hit_block)
+            infect(block)
 
             if (block.x, block.y) not in block_position and block.x > 0 and block.y > 0 and block.x <= SCREEN_WIDTH - BLOCK_SIZE and block.y <= SCREEN_HEIGHT - BLOCK_SIZE :
                 block.change_x = new_direction[0] 
