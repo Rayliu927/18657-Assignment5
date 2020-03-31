@@ -13,7 +13,7 @@ SCREEN_WIDTH = 1000
 SCREEN_HEIGHT = 1000
 BLOCK_SIZE = 10
 # population size = 1000
-M = 1000
+M = 100
 # inital infection rate = 0.1%
 X = 0.1
 # mobility = 50%
@@ -49,6 +49,8 @@ class Block:
         self.periods = -1
         # current direction: l, r, u, d, ul, ur, dl, dr 
         self.direction = None
+        # time of the block
+        self.time = 0
 
 def make_block(status):
     """
@@ -57,8 +59,8 @@ def make_block(status):
     block = Block()
     # Starting position of the block.
     # Take into account the block size so we don't spawn on the edge.
-    block.x = random.randrange(BLOCK_SIZE, SCREEN_WIDTH - BLOCK_SIZE)
-    block.y = random.randrange(BLOCK_SIZE, SCREEN_HEIGHT - BLOCK_SIZE)
+    block.x = random.randrange(BLOCK_SIZE/2, SCREEN_WIDTH - BLOCK_SIZE/2)
+    block.y = random.randrange(BLOCK_SIZE/2, SCREEN_HEIGHT - BLOCK_SIZE/2)
     block.status = status
     if status == "infected":
         block.periods = 0
@@ -94,33 +96,35 @@ def infect(block):
                 if block.status == "infected" and hit_block.status == "infected":
                     continue
                 elif block.status == "infected" and hit_block.status == "healthy":
-                    hit_block.status = "infected"
-                    hit_block.periods = 0
+                    if block.time == hit_block.time or (hit_block.change_x == 0 and hit_block.change_y == 0):
+                        hit_block.status = "infected"
+                        hit_block.periods = 0
                 elif block.status == "healthy" and hit_block.status == "infected":
-                    block.status = "infected"
-                    block.periods = 0
+                    if block.time == hit_block.time or (hit_block.change_x == 0 and hit_block.change_y == 0):
+                        block.status = "infected"
+                        block.periods = 0
 
 def eliminate_options(block):
     options = [(0, 1), (1, 0), (-1, 0), (0, -1), (1, 1), (1, -1), (-1, 1), (-1, -1)]
 
     # top left corner
-    if block.x < 0 and block.y < 0:
+    if block.x == 0 and block.y == 0:
         options.remove((-1, 0))
         options.remove((0, -1))
         options.remove((-1, -1))
     # top right corner
-    elif block.x > SCREEN_WIDTH - BLOCK_SIZE and block.y < 0:
+    elif block.x == SCREEN_WIDTH - BLOCK_SIZE and block.y == 0:
         options.remove((1, 0))
         options.remove((0, -1))
         options.remove((1, -1))
     # botton left corner
-    elif block.x < 0 and block.y > SCREEN_HEIGHT - BLOCK_SIZE:
-        options.remove((0, -1))
+    elif block.x == 0 and block.y > SCREEN_HEIGHT - BLOCK_SIZE:
+        options.remove((0, 1))
         options.remove((-1, 1))
-        options.remove((-1, 1))
+        options.remove((-1, 0))
     #  botton right corner
     elif block.x > SCREEN_WIDTH - BLOCK_SIZE and block.y > SCREEN_HEIGHT - BLOCK_SIZE:
-        options.remove((0, -1))
+        options.remove((0, 1))
         options.remove((1, 0))
         options.remove((1, 1))
     # top
@@ -131,7 +135,7 @@ def eliminate_options(block):
         options.remove((0, 1))
     # left 
     elif block.x < 0:
-        options.remove((-1, 1))
+        options.remove((-1, 0))
     # right
     else:
         options.remove((1, 0))
@@ -245,10 +249,11 @@ def main():
             #     if event.key == pygame.K_SPACE:
             #         block = make_block()
             #         block_list.append(block)
- 
+
         # --- Logic
         for block in mobile_block:
             # Move the block's center
+            block.time += 1
             mobile(block)
             # original_x = block.x
             # original_y = block.y
@@ -283,7 +288,7 @@ def main():
  
         # --- Wrap-up
         # Limit to 60 frames per second
-        clock.tick(10)
+        clock.tick(100)
  
         # Go ahead and update the screen with what we've drawn.
         pygame.display.flip()
