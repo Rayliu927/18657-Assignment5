@@ -418,7 +418,7 @@ if __name__ == "__main__":
     # T_periods is the maximum duration of simulation
     T_periods = 500
     # number of simulation
-    num_simulation = 5
+    num_simulation = 10000
     Ss = [0, 0.25, 0.5, 0.75, 1]
     for S in Ss:
         print("total_death", "total_infection", "maximum_infection", "maximum_periods", "stop_periods")
