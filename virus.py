@@ -10,19 +10,19 @@ GREEN = (0, 255, 0)
 # TODO: use the right scale of initial value
 # TODO: vary S, run the experiment and draw plots
 # size of screen should be 1000 and block size should be 10
-SCREEN_WIDTH = 1000
-SCREEN_HEIGHT = 1000
-BLOCK_SIZE = 12
+SCREEN_WIDTH = 100
+SCREEN_HEIGHT = 100
+BLOCK_SIZE = 1
 # population size = 1000
 M = 1000
 # inital infection rate = 1%
-X = 0.008
-# mobility = 99%
-Pm = 0.99
+X = 0.01
+# mobility = 50%
+Pm = 0.5
 # death probability = 10%
-Pd = 0.05
+Pd = 0.1
 # infection duration = 9 periods
-K = 10
+K = 9
 # S% of population stationary: 0 -> 1
 S = 0
 
@@ -60,8 +60,14 @@ def make_block(status):
     block = Block()
     # Starting position of the block.
     # Take into account the block size so we don't spawn on the edge.
-    block.x = random.randrange(BLOCK_SIZE/2, SCREEN_WIDTH - BLOCK_SIZE/2)
-    block.y = random.randrange(BLOCK_SIZE/2, SCREEN_HEIGHT - BLOCK_SIZE/2)
+    x = random.randrange(BLOCK_SIZE/2, SCREEN_WIDTH - BLOCK_SIZE/2)
+    y = random.randrange(BLOCK_SIZE/2, SCREEN_HEIGHT - BLOCK_SIZE/2)
+    while (x, y) in block_position:
+    	x = random.randrange(BLOCK_SIZE/2, SCREEN_WIDTH - BLOCK_SIZE/2)
+    	y = random.randrange(BLOCK_SIZE/2, SCREEN_HEIGHT - BLOCK_SIZE/2)
+
+    block.x = x
+    block.y = y
     block.status = status
     if status == "infected":
         block.periods = 0
@@ -222,8 +228,8 @@ def main(T_periods):
     maximum_infection = 0
     maximum_periods = 0
     current_infection = 0
-
     periods = 0
+
     # Set the height and width of the screen
     size = [SCREEN_WIDTH, SCREEN_HEIGHT]
     screen = pygame.display.set_mode(size)
@@ -239,8 +245,8 @@ def main(T_periods):
     num_infected = int(M * X)
     num_healthy = M - num_infected
     # update result
-    total_infection += num_infected
-    maximum_infection = max(num_infected, maximum_infection)
+    total_infection = num_infected
+    maximum_infection = num_infected
     current_infection = num_infected
 
     # make inital infected block
@@ -284,13 +290,21 @@ def main(T_periods):
           
         # --- Logic
         for block in mobile_block:
+        	block.time += 1
+        	poss = random.uniform(0, 1)
+        	if poss > Pm:
+        		continue
             # Move the block's center
-            block.time += 1
-            infected = mobile(block)
-            if infected > 0:
-            	current_infection += infected
-            	total_infection += infected
- 
+	        infected = mobile(block)
+	        if infected > 0:
+	        	current_infection += infected
+	        	total_infection += infected
+ 		
+ 		if current_infection > maximum_infection:
+ 			# print("max", periods, current_infection, maximum_infection)
+ 			maximum_infection = max(current_infection, maximum_infection)
+ 			maximum_periods = max(periods, maximum_periods)
+
         # --- Drawing
         # Set the screen background
         screen.fill(WHITE)
@@ -301,6 +315,7 @@ def main(T_periods):
                 block.periods += 1
                 if block.periods == K:
                 	current_infection -= 1
+                	# print("aa", current_infection)
                 	# the block is either dead or cured
                 	poss = random.uniform(0, 1)
 	                if poss < Pd:
@@ -317,18 +332,12 @@ def main(T_periods):
  
         # --- Wrap-up
         # Limit to 60 frames per second
-        clock.tick(100)
+        # clock.tick(60)
  
         # Go ahead and update the screen with what we've drawn.
         pygame.display.flip()
 
-        if current_infection >= maximum_infection:
-        	maximum_infection = current_infection
-        	maximum_periods = periods
-
-        # maximum_infection = max(maximum_infection, current_infection)
-
-        # if there is no one infected, end the simulation
+        # if there is no one infected now, end the simulation
         if current_infection == 0:
         	done = True
  
@@ -343,7 +352,7 @@ if __name__ == "__main__":
 	# T_periods is the maximum duration of simulation
 	T_periods = 500
 	# number of simulation
-	num_simulation = 3
+	num_simulation = 20
 	print("total_death", "total_infection", "maximum_infection", "maximum_periods", "stop_periods")
 	for i in range(num_simulation):
 		total_death, total_infection, maximum_infection, maximum_periods, stop_periods = main(T_periods)
