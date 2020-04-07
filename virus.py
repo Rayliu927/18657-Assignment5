@@ -62,8 +62,8 @@ def make_block(status):
     x = random.randrange(BLOCK_SIZE/2, SCREEN_WIDTH - BLOCK_SIZE/2)
     y = random.randrange(BLOCK_SIZE/2, SCREEN_HEIGHT - BLOCK_SIZE/2)
     while (x, y) in block_position:
-    	x = random.randrange(BLOCK_SIZE/2, SCREEN_WIDTH - BLOCK_SIZE/2)
-    	y = random.randrange(BLOCK_SIZE/2, SCREEN_HEIGHT - BLOCK_SIZE/2)
+        x = random.randrange(BLOCK_SIZE/2, SCREEN_WIDTH - BLOCK_SIZE/2)
+        y = random.randrange(BLOCK_SIZE/2, SCREEN_HEIGHT - BLOCK_SIZE/2)
 
     block.x = x
     block.y = y
@@ -91,26 +91,26 @@ def make_block_mobile(block):
     block.direction = directions[(x, y)]
 
 def infect(block):
-	num_infected = 0
-	if block.status == "cured":
-		return num_infected
-	for x in range(block.x - BLOCK_SIZE, block.x + BLOCK_SIZE):
-	    for y in range(block.y - BLOCK_SIZE, block.y + BLOCK_SIZE):
-	        if (x, y) in block_position:
-	            hit_block = block_position[(x, y)]
-	            if block.status == "infected" and hit_block.status == "infected":
-	                continue
-	            elif block.status == "infected" and hit_block.status == "healthy":
-	                if block.time == hit_block.time or (hit_block.change_x == 0 and hit_block.change_y == 0):
-	                    hit_block.status = "infected"
-	                    hit_block.periods = 0
-	                    num_infected += 1
-	            elif block.status == "healthy" and hit_block.status == "infected":
-	                if block.time == hit_block.time or (hit_block.change_x == 0 and hit_block.change_y == 0):
-	                    block.status = "infected"
-	                    block.periods = 0
-	                    num_infected += 1
-	return num_infected
+    num_infected = 0
+    if block.status == "cured":
+        return num_infected
+    for x in range(block.x - BLOCK_SIZE, block.x + BLOCK_SIZE):
+        for y in range(block.y - BLOCK_SIZE, block.y + BLOCK_SIZE):
+            if (x, y) in block_position:
+                hit_block = block_position[(x, y)]
+                if block.status == "infected" and hit_block.status == "infected":
+                    continue
+                elif block.status == "infected" and hit_block.status == "healthy":
+                    if block.time == hit_block.time or (hit_block.change_x == 0 and hit_block.change_y == 0):
+                        hit_block.status = "infected"
+                        hit_block.periods = 0
+                        num_infected += 1
+                elif block.status == "healthy" and hit_block.status == "infected":
+                    if block.time == hit_block.time or (hit_block.change_x == 0 and hit_block.change_y == 0):
+                        block.status = "infected"
+                        block.periods = 0
+                        num_infected += 1
+    return num_infected
 
 def eliminate_options(block):
     options = [(0, 1), (1, 0), (-1, 0), (0, -1), (1, 1), (1, -1), (-1, 1), (-1, -1)]
@@ -181,9 +181,9 @@ def mobile(block):
 
     # update the block position hashmap
     if (original_x, original_y) in block_position:
-	    del block_position[(original_x, original_y)]
-	    block_position[(block.x, block.y)] = block
-	# the number of blocks are infected
+        del block_position[(original_x, original_y)]
+        block_position[(block.x, block.y)] = block
+    # the number of blocks are infected
     return num_infected
 
 # update the status of the block and remove it from board
@@ -196,25 +196,25 @@ def die(block):
 
 
 def writeResult(total_death, total_infection, maximum_infection, maximum_periods, stop_periods, S):
-	f = open('total_death_' + str(S) + '.txt', 'a')
-	f.write(str(total_death))
-	f.write("\n")
-	f.close()
+    f = open('total_death_' + str(S) + '.txt', 'a')
+    f.write(str(total_death))
+    f.write("\n")
+    f.close()
 
-	f1 = open('total_infection_' + str(S) + '.txt', 'a')
-	f1.write(str(total_infection))
-	f1.write("\n")
-	f1.close()
+    f1 = open('total_infection_' + str(S) + '.txt', 'a')
+    f1.write(str(total_infection))
+    f1.write("\n")
+    f1.close()
 
-	f2 = open('maximum_infection_' + str(S) + '.txt', 'a')
-	f2.write(str(maximum_infection) + ", " + str(maximum_periods))
-	f2.write("\n")
-	f2.close()
+    f2 = open('maximum_infection_' + str(S) + '.txt', 'a')
+    f2.write(str(maximum_infection) + ", " + str(maximum_periods))
+    f2.write("\n")
+    f2.close()
 
-	f3 = open('stop_periods_' + str(S) + '.txt', 'a')
-	f3.write(str(stop_periods))
-	f3.write("\n")
-	f3.close()
+    f3 = open('stop_periods_' + str(S) + '.txt', 'a')
+    f3.write(str(stop_periods))
+    f3.write("\n")
+    f3.close()
 
 def main(T_periods, S):
     """
@@ -278,31 +278,31 @@ def main(T_periods, S):
  
     # -------- Main Program Loop -----------
     while T_periods > periods:
-    	periods += 1
-    	if done:
-    		break
+        periods += 1
+        if done:
+            break
         # --- Event Processing
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-            	# end the program
-            	done = True
+                # end the program
+                done = True
           
         # --- Logic
         for block in mobile_block:
-        	block.time += 1
-        	poss = random.uniform(0, 1)
-        	if poss > Pm:
-        		continue
+            block.time += 1
+            poss = random.uniform(0, 1)
+            if poss > Pm:
+                continue
             # Move the block's center
-	        infected = mobile(block)
-	        if infected > 0:
-	        	current_infection += infected
-	        	total_infection += infected
- 		
- 		if current_infection > maximum_infection:
- 			# print("max", periods, current_infection, maximum_infection)
- 			maximum_infection = max(current_infection, maximum_infection)
- 			maximum_periods = max(periods, maximum_periods)
+            infected = mobile(block)
+            if infected > 0:
+                current_infection += infected
+                total_infection += infected
+
+        if current_infection > maximum_infection:
+            # print("max", periods, current_infection, maximum_infection)
+            maximum_infection = max(current_infection, maximum_infection)
+            maximum_periods = max(periods, maximum_periods)
 
         # --- Drawing
         # Set the screen background
@@ -313,16 +313,16 @@ def main(T_periods, S):
             if block.status == "infected":
                 block.periods += 1
                 if block.periods == K:
-                	current_infection -= 1
-                	# print("aa", current_infection)
-                	# the block is either dead or cured
-                	poss = random.uniform(0, 1)
-	                if poss < Pd:
-	                    die(block)
-	                    total_death += 1
-	                    continue
-	                else:
-	                    block.status = "cured"
+                    current_infection -= 1
+                    # print("aa", current_infection)
+                    # the block is either dead or cured
+                    poss = random.uniform(0, 1)
+                    if poss < Pd:
+                        die(block)
+                        total_death += 1
+                        continue
+                    else:
+                        block.status = "cured"
                 pygame.draw.rect(screen, RED, (block.x, block.y, BLOCK_SIZE, BLOCK_SIZE))
             elif block.status == "cured":
                 pygame.draw.rect(screen, GREEN, (block.x, block.y, BLOCK_SIZE, BLOCK_SIZE))
@@ -338,7 +338,7 @@ def main(T_periods, S):
 
         # if there is no one infected now, end the simulation
         if current_infection == 0:
-        	done = True
+            done = True
  
     # Close everything down
     pygame.quit()
@@ -348,86 +348,86 @@ def main(T_periods, S):
     return total_death, total_infection, maximum_infection, maximum_periods, periods
 
 def report(S):
-	avg_death = 0
-	avg_infection = 0
-	avg_maximum_infection = 0
-	avg_maximum_infection_time = 0
-	avg_stop_periods = 0
+    avg_death = 0
+    avg_infection = 0
+    avg_maximum_infection = 0
+    avg_maximum_infection_time = 0
+    avg_stop_periods = 0
 
-	f = open('total_death_' + str(S) + '.txt', 'r')
-	lines = f.readlines()
-	for line in lines:
-		avg_death += int(line)
-	avg_death = avg_death / len(lines)
-	f.close()
+    f = open('total_death_' + str(S) + '.txt', 'r')
+    lines = f.readlines()
+    for line in lines:
+        avg_death += int(line)
+    avg_death = avg_death / len(lines)
+    f.close()
 
-	f = open('total_infection_' + str(S) + '.txt', 'r')
-	lines = f.readlines()
-	for line in lines:
-		avg_infection += int(line)
-	avg_infection = avg_infection / len(lines)
-	f.close()
+    f = open('total_infection_' + str(S) + '.txt', 'r')
+    lines = f.readlines()
+    for line in lines:
+        avg_infection += int(line)
+    avg_infection = avg_infection / len(lines)
+    f.close()
 
-	f = open('maximum_infection_' + str(S) + '.txt', 'r')
-	lines = f.readlines()
-	for line in lines:
-		tmp = line.split(",")
-		avg_maximum_infection += int(tmp[0])
-		avg_maximum_infection_time += int(tmp[1])
-	avg_maximum_infection = avg_maximum_infection / len(lines)
-	avg_maximum_infection_time = avg_maximum_infection_time / len(lines)
-	f.close()
+    f = open('maximum_infection_' + str(S) + '.txt', 'r')
+    lines = f.readlines()
+    for line in lines:
+        tmp = line.split(",")
+        avg_maximum_infection += int(tmp[0])
+        avg_maximum_infection_time += int(tmp[1])
+    avg_maximum_infection = avg_maximum_infection / len(lines)
+    avg_maximum_infection_time = avg_maximum_infection_time / len(lines)
+    f.close()
 
-	f = open('stop_periods_' + str(S) + '.txt', 'r')
-	lines = f.readlines()
-	for line in lines:
-		avg_stop_periods += int(line)
-	avg_stop_periods = avg_stop_periods / len(lines)
-	f.close()
+    f = open('stop_periods_' + str(S) + '.txt', 'r')
+    lines = f.readlines()
+    for line in lines:
+        avg_stop_periods += int(line)
+    avg_stop_periods = avg_stop_periods / len(lines)
+    f.close()
 
-	f = open('report_' + str(S) + '.txt', 'a')
-	f.write("avg_infection")
-	f.write("\n")
-	f.write(str(avg_infection))
-	f.write("\n")
+    f = open('report_' + str(S) + '.txt', 'a')
+    f.write("avg_infection")
+    f.write("\n")
+    f.write(str(avg_infection))
+    f.write("\n")
 
-	f.write("avg_death")
-	f.write("\n")
-	f.write(str(avg_death))
-	f.write("\n")
+    f.write("avg_death")
+    f.write("\n")
+    f.write(str(avg_death))
+    f.write("\n")
 
-	f.write("avg_stop_periods")
-	f.write("\n")
-	f.write(str(avg_stop_periods))
-	f.write("\n")	
+    f.write("avg_stop_periods")
+    f.write("\n")
+    f.write(str(avg_stop_periods))
+    f.write("\n")
 
-	f.write("avg_maximum_infection")
-	f.write("\n")
-	f.write(str(avg_maximum_infection))
-	f.write("\n")
+    f.write("avg_maximum_infection")
+    f.write("\n")
+    f.write(str(avg_maximum_infection))
+    f.write("\n")
 
-	f.write("maximum_infection_periods")
-	f.write("\n")
-	f.write(str(avg_maximum_infection_time))
-	f.write("\n")
-	f.close()
+    f.write("maximum_infection_periods")
+    f.write("\n")
+    f.write(str(avg_maximum_infection_time))
+    f.write("\n")
+    f.close()
 
 
 if __name__ == "__main__":
-	# T_periods is the maximum duration of simulation
-	T_periods = 500
-	# number of simulation
-	num_simulation = 5
-	Ss = [0, 0.25, 0.5, 0.75, 1]
-	for S in Ss:
-		print("total_death", "total_infection", "maximum_infection", "maximum_periods", "stop_periods")
-		for i in range(num_simulation):
-			total_death, total_infection, maximum_infection, maximum_periods, stop_periods = main(T_periods, S)
-			print(total_death, total_infection, maximum_infection, maximum_periods, stop_periods)
-			writeResult(total_death, total_infection, maximum_infection, maximum_periods, stop_periods, S)
+    # T_periods is the maximum duration of simulation
+    T_periods = 500
+    # number of simulation
+    num_simulation = 5
+    Ss = [0, 0.25, 0.5, 0.75, 1]
+    for S in Ss:
+        print("total_death", "total_infection", "maximum_infection", "maximum_periods", "stop_periods")
+        for i in range(num_simulation):
+            total_death, total_infection, maximum_infection, maximum_periods, stop_periods = main(T_periods, S)
+            print(total_death, total_infection, maximum_infection, maximum_periods, stop_periods)
+            writeResult(total_death, total_infection, maximum_infection, maximum_periods, stop_periods, S)
 
-	for S in Ss:
-		report(S)
+    for S in Ss:
+        report(S)
 
 
 
