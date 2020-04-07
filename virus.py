@@ -421,10 +421,10 @@ if __name__ == "__main__":
     num_simulation = 10000
     Ss = [0, 0.25, 0.5, 0.75, 1]
     for S in Ss:
-        print("total_death", "total_infection", "maximum_infection", "maximum_periods", "stop_periods")
+        # print("total_death", "total_infection", "maximum_infection", "maximum_periods", "stop_periods")
         for i in range(num_simulation):
             total_death, total_infection, maximum_infection, maximum_periods, stop_periods = main(T_periods, S)
-            print(total_death, total_infection, maximum_infection, maximum_periods, stop_periods)
+            # print(total_death, total_infection, maximum_infection, maximum_periods, stop_periods)
             writeResult(total_death, total_infection, maximum_infection, maximum_periods, stop_periods, S)
 
     for S in Ss:
