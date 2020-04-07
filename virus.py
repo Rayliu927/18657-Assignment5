@@ -1,4 +1,3 @@
- 
 import pygame
 import random
  
@@ -8,22 +7,24 @@ WHITE = (255, 255, 255)
 RED = (255, 0, 0)
 GREEN = (0, 255, 0)
 
+# TODO: use the right scale of initial value
+# TODO: vary S, run the experiment and draw plots
 # size of screen should be 1000 and block size should be 10
 SCREEN_WIDTH = 1000
 SCREEN_HEIGHT = 1000
 BLOCK_SIZE = 10
 # population size = 1000
-M = 100
-# inital infection rate = 0.1%
-X = 0.1
-# mobility = 50%
-Pm = 0.5
-# death probability = 2%
-Pd = 0.02
-# infection duration = 7 periods
-K = 60
+M = 1000
+# inital infection rate = 1%
+X = 0.01
+# mobility = 99%
+Pm = 0.99
+# death probability = 10%
+Pd = 0.1
+# infection duration = 9 periods
+K = 9
 # S% of population stationary: 0 -> 1
-S = 0.5
+S = 0
 
 block_list = []
 # position:block
@@ -45,7 +46,7 @@ class Block:
         self.change_y = 0
         # status: infected, healthy
         self.status = None
-        # after infected, periods is set to 0
+        # infected periods: after infected, periods is set to 0
         self.periods = -1
         # current direction: l, r, u, d, ul, ur, dl, dr 
         self.direction = None
@@ -82,59 +83,61 @@ def make_block_mobile(block):
     # Speed and direction of block: -1, 0, 1
     block.change_x = x
     block.change_y = y
-    # block.change_x = 10
-    # block.change_y = 10
     block.direction = directions[(x, y)]
 
 def infect(block):
-    if block.status == "cured":
-        return
-    for x in range(block.x - 10, block.x + 10):
-        for y in range(block.y - 10, block.y + 10):
-            if (x, y) in block_position:
-                hit_block = block_position[(x, y)]
-                if block.status == "infected" and hit_block.status == "infected":
-                    continue
-                elif block.status == "infected" and hit_block.status == "healthy":
-                    if block.time == hit_block.time or (hit_block.change_x == 0 and hit_block.change_y == 0):
-                        hit_block.status = "infected"
-                        hit_block.periods = 0
-                elif block.status == "healthy" and hit_block.status == "infected":
-                    if block.time == hit_block.time or (hit_block.change_x == 0 and hit_block.change_y == 0):
-                        block.status = "infected"
-                        block.periods = 0
+	num_infected = 0
+	if block.status == "cured":
+		return num_infected
+	for x in range(block.x - BLOCK_SIZE, block.x + BLOCK_SIZE):
+	    for y in range(block.y - BLOCK_SIZE, block.y + BLOCK_SIZE):
+	        if (x, y) in block_position:
+	            hit_block = block_position[(x, y)]
+	            if block.status == "infected" and hit_block.status == "infected":
+	                continue
+	            elif block.status == "infected" and hit_block.status == "healthy":
+	                if block.time == hit_block.time or (hit_block.change_x == 0 and hit_block.change_y == 0):
+	                    hit_block.status = "infected"
+	                    hit_block.periods = 0
+	                    num_infected += 1
+	            elif block.status == "healthy" and hit_block.status == "infected":
+	                if block.time == hit_block.time or (hit_block.change_x == 0 and hit_block.change_y == 0):
+	                    block.status = "infected"
+	                    block.periods = 0
+	                    num_infected += 1
+	return num_infected
 
 def eliminate_options(block):
     options = [(0, 1), (1, 0), (-1, 0), (0, -1), (1, 1), (1, -1), (-1, 1), (-1, -1)]
 
     # top left corner
-    if block.x == 0 and block.y == 0:
+    if block.x <= 0 and block.y <= 0:
         options.remove((-1, 0))
         options.remove((0, -1))
         options.remove((-1, -1))
     # top right corner
-    elif block.x == SCREEN_WIDTH - BLOCK_SIZE and block.y == 0:
+    elif block.x >= SCREEN_WIDTH - BLOCK_SIZE and block.y <= 0:
         options.remove((1, 0))
         options.remove((0, -1))
         options.remove((1, -1))
     # botton left corner
-    elif block.x == 0 and block.y > SCREEN_HEIGHT - BLOCK_SIZE:
+    elif block.x <= 0 and block.y >= SCREEN_HEIGHT - BLOCK_SIZE:
         options.remove((0, 1))
         options.remove((-1, 1))
         options.remove((-1, 0))
     #  botton right corner
-    elif block.x > SCREEN_WIDTH - BLOCK_SIZE and block.y > SCREEN_HEIGHT - BLOCK_SIZE:
+    elif block.x >= SCREEN_WIDTH - BLOCK_SIZE and block.y >= SCREEN_HEIGHT - BLOCK_SIZE:
         options.remove((0, 1))
         options.remove((1, 0))
         options.remove((1, 1))
     # top
-    elif block.y < 0:
+    elif block.y <= 0:
         options.remove((0, -1))
     # bottom
-    elif block.y > SCREEN_HEIGHT - BLOCK_SIZE:
+    elif block.y >= SCREEN_HEIGHT - BLOCK_SIZE:
         options.remove((0, 1))
     # left 
-    elif block.x < 0:
+    elif block.x <= 0:
         options.remove((-1, 0))
     # right
     else:
@@ -151,9 +154,9 @@ def mobile(block):
     options = eliminate_options(block)
     block.x += block.change_x
     block.y += block.change_y
-    infect(block)
+    num_infected = infect(block)
 
-    if (block.x, block.y) in block_position or block.y > SCREEN_HEIGHT - BLOCK_SIZE or block.y < 0 or block.x > SCREEN_WIDTH - BLOCK_SIZE or block.x < 0:
+    if (block.x, block.y) in block_position or block.y >= SCREEN_HEIGHT - BLOCK_SIZE or block.y <= 0 or block.x >= SCREEN_WIDTH - BLOCK_SIZE or block.x <= 0:
 
         while len(options) > 0:
             block.x = original_x
@@ -164,23 +167,21 @@ def mobile(block):
 
             block.x += new_direction[0]
             block.y += new_direction[1]
-            infect(block)
+            num_infected += infect(block)
 
-            if (block.x, block.y) not in block_position and block.x > 0 and block.y > 0 and block.x <= SCREEN_WIDTH - BLOCK_SIZE and block.y <= SCREEN_HEIGHT - BLOCK_SIZE :
+            if (block.x, block.y) not in block_position and block.x >= 0 and block.y >= 0 and block.x <= SCREEN_WIDTH - BLOCK_SIZE and block.y <= SCREEN_HEIGHT - BLOCK_SIZE :
                 block.change_x = new_direction[0] 
                 block.change_y = new_direction[1]
                 break
 
     # update the block position hashmap
-    del block_position[(original_x, original_y)]
-    block_position[(block.x, block.y)] = block
+    if (original_x, original_y) in block_position:
+	    del block_position[(original_x, original_y)]
+	    block_position[(block.x, block.y)] = block
+	# the number of blocks are infected
+    return num_infected
 
-    # # Bounce the block if needed
-    # if block.y > SCREEN_HEIGHT - BLOCK_SIZE or block.y < 0:
-    #     block.change_y *= -1
-    # if block.x > SCREEN_WIDTH - BLOCK_SIZE or block.x < 0:
-    #     block.change_x *= -1
-
+# update the status of the block and remove it from board
 def die(block):
     """
     Function to erase a block
@@ -188,13 +189,35 @@ def die(block):
     block.status = "dead"
     block_list.remove(block)
 
- 
-def main():
+
+def writeResult(total_death, total_infection, maximum_infection):
+	f = open('total_death.txt', 'a')
+	f.write(str(total_death))
+	f.write("\n")
+	f.close()
+
+	f1 = open('total_infection.txt', 'a')
+	f1.write(str(total_infection))
+	f1.write("\n")
+	f1.close()
+
+	f2 = open('maximum_infection.txt', 'a')
+	f2.write(str(maximum_infection))
+	f2.write("\n")
+	f2.close()
+
+def main(T_periods):
     """
     This is our main program.
     """
     pygame.init()
-    death = 0
+    # initial result
+    total_death = 0
+    total_infection = 0
+    maximum_infection = 0
+    current_infection = 0
+
+    periods = 0
     # Set the height and width of the screen
     size = [SCREEN_WIDTH, SCREEN_HEIGHT]
     screen = pygame.display.set_mode(size)
@@ -209,6 +232,10 @@ def main():
 
     num_infected = int(M * X)
     num_healthy = M - num_infected
+    # update result
+    total_infection += num_infected
+    maximum_infection = max(num_infected, maximum_infection)
+    current_infection = num_infected
 
     # make inital infected block
     for i in range(num_infected):
@@ -239,28 +266,24 @@ def main():
         mobile_block.append(block_list[i])
  
     # -------- Main Program Loop -----------
-    while not done:
+    while T_periods > periods:
+    	periods += 1
+    	if done:
+    		break
         # --- Event Processing
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                done = True
-            # elif event.type == pygame.KEYDOWN:
-            #     # Space bar! Spawn a new ball.
-            #     if event.key == pygame.K_SPACE:
-            #         block = make_block()
-            #         block_list.append(block)
-
+            	# end the program
+            	done = True
+          
         # --- Logic
         for block in mobile_block:
             # Move the block's center
             block.time += 1
-            mobile(block)
-            # original_x = block.x
-            # original_y = block.y
-            # block.x += block.change_x
-            # block.y += block.change_y
- 
-            # change_direction(block)
+            infected = mobile(block)
+            if infected > 0:
+            	current_infection += infected
+            	total_infection += infected
  
         # --- Drawing
         # Set the screen background
@@ -271,15 +294,15 @@ def main():
             if block.status == "infected":
                 block.periods += 1
                 if block.periods == K:
-                    # the block is either dead or cured
-                    poss = random.uniform(0, 1)
-                    if poss < Pd:
-                        die(block)
-                        death += 1
-                        print(death)
-                        continue
-                    else:
-                        block.status = "cured"
+                	current_infection -= 1
+                	# the block is either dead or cured
+                	poss = random.uniform(0, 1)
+	                if poss < Pd:
+	                    die(block)
+	                    total_death += 1
+	                    continue
+	                else:
+	                    block.status = "cured"
                 pygame.draw.rect(screen, RED, (block.x, block.y, BLOCK_SIZE, BLOCK_SIZE))
             elif block.status == "cured":
                 pygame.draw.rect(screen, GREEN, (block.x, block.y, BLOCK_SIZE, BLOCK_SIZE))
@@ -292,9 +315,32 @@ def main():
  
         # Go ahead and update the screen with what we've drawn.
         pygame.display.flip()
+
+        maximum_infection = max(maximum_infection, current_infection)
+
+        # if there is no one infected, end the simulation
+        if current_infection == 0:
+        	done = True
  
     # Close everything down
     pygame.quit()
+    del block_list[:]
+    block_position.clear()
+    del mobile_block[:]
+    return total_death, total_infection, maximum_infection
  
 if __name__ == "__main__":
-    main()
+	# T_periods is the maximum duration of simulation
+	T_periods = 100
+	# number of simulation
+	num_simulation = 3
+	print("total_death", "total_infection", "maximum_infection")
+	for i in range(num_simulation):
+		total_death, total_infection, maximum_infection = main(T_periods)
+		print(total_death, total_infection, maximum_infection)
+		writeResult(total_death, total_infection, maximum_infection)
+
+
+
+
+
