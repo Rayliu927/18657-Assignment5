@@ -12,17 +12,17 @@ GREEN = (0, 255, 0)
 # size of screen should be 1000 and block size should be 10
 SCREEN_WIDTH = 1000
 SCREEN_HEIGHT = 1000
-BLOCK_SIZE = 10
+BLOCK_SIZE = 12
 # population size = 1000
 M = 1000
 # inital infection rate = 1%
-X = 0.01
+X = 0.008
 # mobility = 99%
 Pm = 0.99
 # death probability = 10%
-Pd = 0.1
+Pd = 0.05
 # infection duration = 9 periods
-K = 9
+K = 10
 # S% of population stationary: 0 -> 1
 S = 0
 
@@ -190,7 +190,7 @@ def die(block):
     block_list.remove(block)
 
 
-def writeResult(total_death, total_infection, maximum_infection):
+def writeResult(total_death, total_infection, maximum_infection, maximum_periods, stop_periods):
 	f = open('total_death.txt', 'a')
 	f.write(str(total_death))
 	f.write("\n")
@@ -202,9 +202,14 @@ def writeResult(total_death, total_infection, maximum_infection):
 	f1.close()
 
 	f2 = open('maximum_infection.txt', 'a')
-	f2.write(str(maximum_infection))
+	f2.write(str(maximum_infection) + ", " + str(maximum_periods))
 	f2.write("\n")
 	f2.close()
+
+	f3 = open('stop_periods.txt', 'a')
+	f3.write(str(stop_periods))
+	f3.write("\n")
+	f3.close()
 
 def main(T_periods):
     """
@@ -215,6 +220,7 @@ def main(T_periods):
     total_death = 0
     total_infection = 0
     maximum_infection = 0
+    maximum_periods = 0
     current_infection = 0
 
     periods = 0
@@ -316,7 +322,11 @@ def main(T_periods):
         # Go ahead and update the screen with what we've drawn.
         pygame.display.flip()
 
-        maximum_infection = max(maximum_infection, current_infection)
+        if current_infection >= maximum_infection:
+        	maximum_infection = current_infection
+        	maximum_periods = periods
+
+        # maximum_infection = max(maximum_infection, current_infection)
 
         # if there is no one infected, end the simulation
         if current_infection == 0:
@@ -327,18 +337,18 @@ def main(T_periods):
     del block_list[:]
     block_position.clear()
     del mobile_block[:]
-    return total_death, total_infection, maximum_infection
+    return total_death, total_infection, maximum_infection, maximum_periods, periods
  
 if __name__ == "__main__":
 	# T_periods is the maximum duration of simulation
-	T_periods = 100
+	T_periods = 500
 	# number of simulation
 	num_simulation = 3
-	print("total_death", "total_infection", "maximum_infection")
+	print("total_death", "total_infection", "maximum_infection", "maximum_periods", "stop_periods")
 	for i in range(num_simulation):
-		total_death, total_infection, maximum_infection = main(T_periods)
-		print(total_death, total_infection, maximum_infection)
-		writeResult(total_death, total_infection, maximum_infection)
+		total_death, total_infection, maximum_infection, maximum_periods, stop_periods = main(T_periods)
+		print(total_death, total_infection, maximum_infection, maximum_periods, stop_periods)
+		writeResult(total_death, total_infection, maximum_infection, maximum_periods, stop_periods)
 
 
 
