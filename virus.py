@@ -7,7 +7,6 @@ WHITE = (255, 255, 255)
 RED = (255, 0, 0)
 GREEN = (0, 255, 0)
 
-# TODO: use the right scale of initial value
 # TODO: vary S, run the experiment and draw plots
 # size of screen should be 1000 and block size should be 10
 SCREEN_WIDTH = 100
@@ -24,7 +23,7 @@ Pd = 0.1
 # infection duration = 9 periods
 K = 9
 # S% of population stationary: 0 -> 1
-S = 0
+# S = 0
 
 block_list = []
 # position:block
@@ -196,28 +195,28 @@ def die(block):
     block_list.remove(block)
 
 
-def writeResult(total_death, total_infection, maximum_infection, maximum_periods, stop_periods):
-	f = open('total_death.txt', 'a')
+def writeResult(total_death, total_infection, maximum_infection, maximum_periods, stop_periods, S):
+	f = open('total_death_' + str(S) + '.txt', 'a')
 	f.write(str(total_death))
 	f.write("\n")
 	f.close()
 
-	f1 = open('total_infection.txt', 'a')
+	f1 = open('total_infection_' + str(S) + '.txt', 'a')
 	f1.write(str(total_infection))
 	f1.write("\n")
 	f1.close()
 
-	f2 = open('maximum_infection.txt', 'a')
+	f2 = open('maximum_infection_' + str(S) + '.txt', 'a')
 	f2.write(str(maximum_infection) + ", " + str(maximum_periods))
 	f2.write("\n")
 	f2.close()
 
-	f3 = open('stop_periods.txt', 'a')
+	f3 = open('stop_periods_' + str(S) + '.txt', 'a')
 	f3.write(str(stop_periods))
 	f3.write("\n")
 	f3.close()
 
-def main(T_periods):
+def main(T_periods, S):
     """
     This is our main program.
     """
@@ -347,17 +346,88 @@ def main(T_periods):
     block_position.clear()
     del mobile_block[:]
     return total_death, total_infection, maximum_infection, maximum_periods, periods
- 
+
+def report(S):
+	avg_death = 0
+	avg_infection = 0
+	avg_maximum_infection = 0
+	avg_maximum_infection_time = 0
+	avg_stop_periods = 0
+
+	f = open('total_death_' + str(S) + '.txt', 'r')
+	lines = f.readlines()
+	for line in lines:
+		avg_death += int(line)
+	avg_death = avg_death / len(lines)
+	f.close()
+
+	f = open('total_infection_' + str(S) + '.txt', 'r')
+	lines = f.readlines()
+	for line in lines:
+		avg_infection += int(line)
+	avg_infection = avg_infection / len(lines)
+	f.close()
+
+	f = open('maximum_infection_' + str(S) + '.txt', 'r')
+	lines = f.readlines()
+	for line in lines:
+		tmp = line.split(",")
+		avg_maximum_infection += int(tmp[0])
+		avg_maximum_infection_time += int(tmp[1])
+	avg_maximum_infection = avg_maximum_infection / len(lines)
+	avg_maximum_infection_time = avg_maximum_infection_time / len(lines)
+	f.close()
+
+	f = open('stop_periods_' + str(S) + '.txt', 'r')
+	lines = f.readlines()
+	for line in lines:
+		avg_stop_periods += int(line)
+	avg_stop_periods = avg_stop_periods / len(lines)
+	f.close()
+
+	f = open('report_' + str(S) + '.txt', 'a')
+	f.write("avg_infection")
+	f.write("\n")
+	f.write(str(avg_infection))
+	f.write("\n")
+
+	f.write("avg_death")
+	f.write("\n")
+	f.write(str(avg_death))
+	f.write("\n")
+
+	f.write("avg_stop_periods")
+	f.write("\n")
+	f.write(str(avg_stop_periods))
+	f.write("\n")	
+
+	f.write("avg_maximum_infection")
+	f.write("\n")
+	f.write(str(avg_maximum_infection))
+	f.write("\n")
+
+	f.write("maximum_infection_periods")
+	f.write("\n")
+	f.write(str(avg_maximum_infection_time))
+	f.write("\n")
+	f.close()
+
+
 if __name__ == "__main__":
 	# T_periods is the maximum duration of simulation
 	T_periods = 500
 	# number of simulation
-	num_simulation = 20
-	print("total_death", "total_infection", "maximum_infection", "maximum_periods", "stop_periods")
-	for i in range(num_simulation):
-		total_death, total_infection, maximum_infection, maximum_periods, stop_periods = main(T_periods)
-		print(total_death, total_infection, maximum_infection, maximum_periods, stop_periods)
-		writeResult(total_death, total_infection, maximum_infection, maximum_periods, stop_periods)
+	num_simulation = 5
+	Ss = [0, 0.25, 0.5, 0.75, 1]
+	for S in Ss:
+		print("total_death", "total_infection", "maximum_infection", "maximum_periods", "stop_periods")
+		for i in range(num_simulation):
+			total_death, total_infection, maximum_infection, maximum_periods, stop_periods = main(T_periods, S)
+			print(total_death, total_infection, maximum_infection, maximum_periods, stop_periods)
+			writeResult(total_death, total_infection, maximum_infection, maximum_periods, stop_periods, S)
+
+	for S in Ss:
+		report(S)
 
 
 
