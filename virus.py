@@ -59,11 +59,11 @@ def make_block(status):
     block = Block()
     # Starting position of the block.
     # Take into account the block size so we don't spawn on the edge.
-    x = random.randrange(BLOCK_SIZE/2, SCREEN_WIDTH - BLOCK_SIZE/2)
-    y = random.randrange(BLOCK_SIZE/2, SCREEN_HEIGHT - BLOCK_SIZE/2)
+    x = random.randrange(0, SCREEN_WIDTH - BLOCK_SIZE) + BLOCK_SIZE/2
+    y = random.randrange(0, SCREEN_HEIGHT - BLOCK_SIZE) + BLOCK_SIZE/2
     while (x, y) in block_position:
-        x = random.randrange(BLOCK_SIZE/2, SCREEN_WIDTH - BLOCK_SIZE/2)
-        y = random.randrange(BLOCK_SIZE/2, SCREEN_HEIGHT - BLOCK_SIZE/2)
+        x = random.randrange(0, SCREEN_WIDTH - BLOCK_SIZE) + BLOCK_SIZE/2
+        y = random.randrange(0, SCREEN_HEIGHT - BLOCK_SIZE) + BLOCK_SIZE/2
 
     block.x = x
     block.y = y
