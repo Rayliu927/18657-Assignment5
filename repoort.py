@@ -64,4 +64,15 @@ def report(S):
 	f.write("\n")
 	f.close()
 
-report(0)
+# report(0)
+
+
+S = 0.25
+
+f = open('total_death_' + str(S) + '.txt', 'r')
+lines = f.readlines()
+print(len(lines))
+f.close()
+
+
+

@@ -1,0 +1,10 @@
+avg_infection
+69.4309
+avg_death
+6.9575
+avg_stop_periods
+49.2448
+avg_maximum_infection
+32.802
+maximum_infection_periods
+9.6521
